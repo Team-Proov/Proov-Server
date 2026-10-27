@@ -8,8 +8,8 @@ import org.springframework.context.annotation.Import
 @SpringBootTest
 class ProovServerApplicationTests {
 
-	@Test
-	fun contextLoads() {
-	}
+    @Test
+    fun contextLoads() {
+    }
 
 }

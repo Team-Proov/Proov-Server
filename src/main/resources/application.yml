@@ -1,12 +1,41 @@
 spring:
-  config:
-    import: optional:file:.env[.properties]
   application:
     name: proov-server
+  profiles:
+    default: local
+  config:
+    import: optional:file:.env[.properties]
   datasource:
-    url: ${DB_URL}
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 10
+      connection-timeout: 3000
   jpa:
+    open-in-view: false
     hibernate:
       ddl-auto: ${DDL_AUTO:validate}
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
+  web:
+    locale: ko_KR
+    locale-resolver: fixed
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  otlp:
+    metrics:
+      export:
+        enabled: false
+
+logging:
+  level:
+    org.springframework.web.servlet.PageNotFound: off

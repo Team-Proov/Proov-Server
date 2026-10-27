@@ -7,5 +7,5 @@ import org.springframework.boot.runApplication
 class ProovServerApplication
 
 fun main(args: Array<String>) {
-	runApplication<ProovServerApplication>(*args)
+    runApplication<ProovServerApplication>(*args)
 }
