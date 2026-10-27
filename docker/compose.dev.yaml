@@ -1,0 +1,6 @@
+services:
+  app:
+    env_file:
+      - ../.env.dev
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
