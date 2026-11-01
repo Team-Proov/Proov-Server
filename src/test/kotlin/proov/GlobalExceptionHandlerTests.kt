@@ -3,6 +3,7 @@ package proov
 import org.hamcrest.Matchers.containsString
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
@@ -19,6 +20,7 @@ import proov.global.exception.CustomException
 import proov.global.exception.ErrorCode
 
 @WebMvcTest(controllers = [ExceptionProbeController::class])
+@AutoConfigureMockMvc(addFilters = false)
 class GlobalExceptionHandlerTests(@Autowired private val mockMvc: MockMvc) {
 
     @Test

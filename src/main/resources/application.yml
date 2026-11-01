@@ -25,6 +25,19 @@ spring:
     locale: ko_KR
     locale-resolver: fixed
 
+proov:
+  jwt:
+    issuer: proov
+    secret: ${JWT_SECRET}
+    access-token-ttl: 30m
+  oauth:
+    apple:
+      client-ids: ${APPLE_CLIENT_IDS:}
+    kakao:
+      client-ids: ${KAKAO_CLIENT_IDS:}
+    google:
+      client-ids: ${GOOGLE_CLIENT_IDS:}
+
 management:
   endpoints:
     web:
