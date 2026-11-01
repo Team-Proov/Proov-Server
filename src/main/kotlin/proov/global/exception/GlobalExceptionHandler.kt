@@ -7,12 +7,15 @@ import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.validation.FieldError
 import org.springframework.web.ErrorResponse as SpringErrorResponse
 import org.springframework.web.HttpMediaTypeNotAcceptableException
+import org.springframework.web.HttpMediaTypeNotSupportedException
+import org.springframework.web.HttpRequestMethodNotSupportedException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.MissingServletRequestParameterException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.method.annotation.HandlerMethodValidationException
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
+import org.springframework.web.servlet.resource.NoResourceFoundException
 
 @RestControllerAdvice
 class GlobalExceptionHandler {
@@ -70,6 +73,27 @@ class GlobalExceptionHandler {
     @ExceptionHandler(MissingServletRequestParameterException::class)
     fun handleMissingServletRequestParameterException(e: MissingServletRequestParameterException): ResponseEntity<ErrorResponse> =
         respond(e, ErrorCode.INVALID_INPUT, mapOf(e.parameterName to "필수 값입니다."))
+
+    /**
+     * 존재하지 않는 경로 (404)
+     */
+    @ExceptionHandler(NoResourceFoundException::class)
+    fun handleNoResourceFoundException(e: NoResourceFoundException): ResponseEntity<ErrorResponse> =
+        respond(e, ErrorCode.RESOURCE_NOT_FOUND, headers = e.headers)
+
+    /**
+     * 지원하지 않는 HTTP 메서드 (405)
+     */
+    @ExceptionHandler(HttpRequestMethodNotSupportedException::class)
+    fun handleHttpRequestMethodNotSupportedException(e: HttpRequestMethodNotSupportedException): ResponseEntity<ErrorResponse> =
+        respond(e, ErrorCode.METHOD_NOT_ALLOWED, headers = e.headers)
+
+    /**
+     * 지원하지 않는 Content-Type (415)
+     */
+    @ExceptionHandler(HttpMediaTypeNotSupportedException::class)
+    fun handleHttpMediaTypeNotSupportedException(e: HttpMediaTypeNotSupportedException): ResponseEntity<ErrorResponse> =
+        respond(e, ErrorCode.UNSUPPORTED_MEDIA_TYPE, headers = e.headers)
 
     // Accept 헤더가 JSON을 거부한 경우에는 오류 본문도 JSON으로 쓸 수 없다.
     @ExceptionHandler(HttpMediaTypeNotAcceptableException::class)

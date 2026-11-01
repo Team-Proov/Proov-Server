@@ -26,6 +26,7 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
 	implementation("org.springframework.boot:spring-boot-starter-opentelemetry")
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.2.0")
+	implementation("io.hypersistence:hypersistence-utils-hibernate-73:3.16.0")
 	implementation("tools.jackson.module:jackson-module-kotlin")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	runtimeOnly("org.postgresql:postgresql")
