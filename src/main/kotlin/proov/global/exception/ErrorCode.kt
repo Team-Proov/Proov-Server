@@ -12,6 +12,7 @@ enum class ErrorCode(
 
     // 401 Unauthorized
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인증이 필요합니다."),
+    INVALID_ID_TOKEN(HttpStatus.UNAUTHORIZED, "소셜 로그인 정보가 올바르지 않습니다."),
 
     // 403 Forbidden
     FORBIDDEN(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
@@ -39,6 +40,7 @@ enum class ErrorCode(
 
     // 503 Service Unavailable
     SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "잠시 후 다시 시도해 주세요."),
+    SOCIAL_LOGIN_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "소셜 로그인 서비스에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요."),
     ;
 
     override val code: String get() = name
