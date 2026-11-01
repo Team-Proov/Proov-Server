@@ -6,6 +6,8 @@ import org.springframework.http.HttpMethod
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.invoke
 import org.springframework.security.config.http.SessionCreationPolicy
+import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver
+import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver
 import org.springframework.security.web.SecurityFilterChain
 import proov.global.auth.jwt.handler.JwtAccessDeniedHandler
 import proov.global.auth.jwt.handler.JwtAuthenticationEntryPoint
@@ -18,6 +20,7 @@ class SecurityConfig(
 
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
+        val defaultBearerTokenResolver = DefaultBearerTokenResolver()
         http {
             csrf { disable() }
             httpBasic { disable() }
@@ -26,11 +29,18 @@ class SecurityConfig(
             sessionManagement { sessionCreationPolicy = SessionCreationPolicy.STATELESS }
             authorizeHttpRequests {
                 PERMIT_ALL.forEach { authorize(it, permitAll) }
-                authorize(HttpMethod.POST, "/api/v1/auth/login", permitAll)
+                authorize(HttpMethod.POST, LOGIN_PATH, permitAll)
                 authorize(anyRequest, authenticated)
             }
             oauth2ResourceServer {
                 jwt { }
+                bearerTokenResolver = BearerTokenResolver { request ->
+                    if (request.method == HttpMethod.POST.name() && request.requestURI == request.contextPath + LOGIN_PATH) {
+                        null
+                    } else {
+                        defaultBearerTokenResolver.resolve(request)
+                    }
+                }
                 authenticationEntryPoint = jwtAuthenticationEntryPoint
             }
             exceptionHandling {
@@ -42,6 +52,7 @@ class SecurityConfig(
     }
 
     companion object {
+        private const val LOGIN_PATH = "/api/v1/auth/login"
         private val PERMIT_ALL = arrayOf(
             // Swagger UI
             "/swagger-ui.html",

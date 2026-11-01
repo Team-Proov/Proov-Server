@@ -71,6 +71,12 @@ class AuthIntegrationTests(
     }
 
     @Test
+    fun loginSucceedsEvenWithStaleBearerHeader() {
+        mockMvc.perform(login("KAKAO", REGISTERED_ID_TOKEN).header(HttpHeaders.AUTHORIZATION, "Bearer not-a-jwt"))
+            .andExpect(status().isOk)
+    }
+
+    @Test
     fun loginRequiresSignupForUnknownSocialAccount() {
         mockMvc.perform(login("KAKAO", UNREGISTERED_ID_TOKEN))
             .andExpect(status().isNotFound)
@@ -127,6 +133,20 @@ class AuthIntegrationTests(
         mockMvc.perform(get(PROTECTED_PATH).header(HttpHeaders.AUTHORIZATION, "Bearer $expired"))
             .andExpect(status().isUnauthorized)
             .andExpect(jsonPath("$.code").value("EXPIRED_TOKEN"))
+    }
+
+    @Test
+    fun accessTokenWithoutExpirationIsInvalid() {
+        val claims = JwtClaimsSet.builder()
+            .issuer("proov")
+            .subject(USER_ID)
+            .issuedAt(Instant.now())
+            .build()
+        val token = jwtEncoder.encode(JwtEncoderParameters.from(JwsHeader.with(MacAlgorithm.HS256).build(), claims)).tokenValue
+
+        mockMvc.perform(get(PROTECTED_PATH).header(HttpHeaders.AUTHORIZATION, "Bearer $token"))
+            .andExpect(status().isUnauthorized)
+            .andExpect(jsonPath("$.code").value("INVALID_TOKEN"))
     }
 
     private fun login(provider: String, idToken: String) =

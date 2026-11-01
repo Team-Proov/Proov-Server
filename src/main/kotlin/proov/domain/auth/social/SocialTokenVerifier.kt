@@ -8,11 +8,13 @@ import org.springframework.security.oauth2.jwt.JwtClaimValidator
 import org.springframework.security.oauth2.jwt.JwtDecoder
 import org.springframework.security.oauth2.jwt.JwtException
 import org.springframework.security.oauth2.jwt.JwtTimestampValidator
+import org.springframework.security.oauth2.jwt.MappedJwtClaimSetConverter
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder
 import org.springframework.web.client.RestOperations
 import proov.domain.user.enums.SocialProvider
 import proov.global.exception.CustomException
 import proov.global.exception.ErrorCode
+import java.time.Instant
 
 /**
  * 애플, 카카오, 구글의 OIDC ID 토큰을 각 제공자의 공개키(JWKS)로 검증한다.
@@ -49,13 +51,21 @@ class SocialTokenVerifier(
         if (clientIds.isEmpty()) {
             log.warn("{} client ID가 설정되지 않아 이 제공자의 ID 토큰은 모두 거절합니다.", provider.name)
         }
+        val claimConverter = MappedJwtClaimSetConverter.withDefaults(emptyMap())
         return NimbusJwtDecoder.withJwkSetUri(provider.jwkSetUri)
             .restOperations(restOperations)
             .build()
             .apply {
+                setClaimSetConverter { claims ->
+                    claimConverter.convert(claims).apply {
+                        // Spring Security가 누락된 iat를 exp - 1초로 채우므로 원본 클레임을 확인한다.
+                        if (JwtClaimNames.IAT !in claims) remove(JwtClaimNames.IAT)
+                    }
+                }
                 setJwtValidator(
                     DelegatingOAuth2TokenValidator(
-                        JwtTimestampValidator(),
+                        JwtTimestampValidator().apply { setAllowEmptyExpiryClaim(false) },
+                        JwtClaimValidator<Instant>(JwtClaimNames.IAT) { true },
                         JwtClaimValidator<String>(JwtClaimNames.ISS) { it in provider.issuers },
                         JwtClaimValidator<List<String>>(JwtClaimNames.AUD) { audiences -> audiences.any { it in clientIds } },
                     ),

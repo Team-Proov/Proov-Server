@@ -66,6 +66,25 @@ class SocialTokenVerifierTests {
     }
 
     @Test
+    fun rejectsTokenWithoutExpiration() {
+        respondWithKeys()
+
+        assertErrorCode(idToken(includeExpiration = false), ErrorCode.INVALID_ID_TOKEN)
+    }
+
+    @Test
+    fun rejectsTokenWithoutIssuedAt() {
+        respondWithKeys()
+
+        assertErrorCode(idToken(includeIssuedAt = false), ErrorCode.INVALID_ID_TOKEN)
+    }
+
+    @Test
+    fun rejectsMalformedToken() {
+        assertErrorCode("not-a-jwt", ErrorCode.INVALID_ID_TOKEN)
+    }
+
+    @Test
     fun rejectsTokenSignedByUnknownKey() {
         respondWithKeys()
         val otherKey = RSAKeyGenerator(2048).keyID("test-key").generate()
@@ -96,13 +115,17 @@ class SocialTokenVerifierTests {
         audience: String = CLIENT_ID,
         expiresAt: Instant = Instant.now().plus(Duration.ofHours(1)),
         signingKey: RSAKey = key,
+        includeExpiration: Boolean = true,
+        includeIssuedAt: Boolean = true,
     ): String {
         val claims = JWTClaimsSet.Builder()
             .issuer(issuer)
             .audience(audience)
             .subject("kakao-user")
-            .issueTime(Date.from(expiresAt.minus(Duration.ofHours(2))))
-            .expirationTime(Date.from(expiresAt))
+            .apply {
+                if (includeIssuedAt) issueTime(Date.from(expiresAt.minus(Duration.ofHours(2))))
+                if (includeExpiration) expirationTime(Date.from(expiresAt))
+            }
             .build()
         return SignedJWT(JWSHeader.Builder(JWSAlgorithm.RS256).keyID(signingKey.keyID).build(), claims)
             .apply { sign(RSASSASigner(signingKey)) }
