@@ -1,0 +1,8 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+
+proov:
+  jwt:
+    secret: test-secret-key-for-proov-server-tests-only
